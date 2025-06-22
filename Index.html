@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPA TEST</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+            background-color: #f8f9fa;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            box-sizing: border-box;
+        }
+        .controls-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .controls-container label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .controls-container input {
+            width: 150px;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .card {
+            position: relative; 
+            background-color: #ffffff;
+            padding: 0 24px 24px 24px;
+            border: 1px solid #dee2e6;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 1470px;
+            min-height: 415px;
+            box-shadow: 0 1px 4px 0 rgba(20, 3, 66, 0.07);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .card h3 {
+            position: absolute;
+            top: 16.8px;
+            left: 0;
+            right: 0;
+            margin: 0;
+            padding: 0 30px 16px 30px;
+            border-bottom: 1px solid #EDEDED;
+            font-size: 18px;
+            font-weight: 600;
+            color: #031C42;
+        }
+
+        .content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 38px;
+            margin-top: 80px;
+        }
+        
+        .chart-container {
+            width: 248px;
+            height: 248px;
+            position: relative;
+        }
+        
+        .chart-text-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        #chart-gpa-value {
+            font-size: 48px;
+            font-weight: 600;
+            color: #031C42;
+            line-height: 1;
+        }
+
+        .chart-gpa-label {
+            font-size: 16px;
+            font-weight: 500;
+            color: rgba(79, 98, 123, 0.7);
+        }
+
+        #chart {
+            width: 100%;
+            height: 100%;
+        }
+        .details ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .details li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .details li::before {
+            content: '●';
+            color: var(--bullet-color, #f0ad4e);
+            font-size: 14px;
+            margin-right: 12px;
+            padding-top: 5px;
+        }
+        
+        .details .label {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            color: #031C42;
+            font-size: 22px;
+        }
+        
+        .details .value {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            color: rgba(79, 98, 123, 0.7);
+            font-size: 22px;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                padding: 24px;
+            }
+            .content {
+                flex-direction: column;
+                gap: 40px;
+                margin-top: 0;
+            }
+
+            .card h3 {
+                position: static;
+                text-align: center;
+                margin: 0 0 24px 0;
+                padding: 0 0 16px 0;
+            }
+
+            .details {
+                text-align: left; /* تغيير المحاذاة لليسار */
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+            
+            /* مؤكد: تم تعديل هذه القاعدة */
+            .details li {
+                /* تم إلغاء justify-content: center لجعل المحتوى يبدأ من اليسار */
+                align-items: center;
+            }
+
+            /* مؤكد: تم حذف القاعدة الخاصة بـ li::before لإظهار النقاط */
+
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls-container">
+        <label for="gpa-input">Enter the GPA value (from 0.0 to 4.0)</label>
+        <input type="number" id="gpa-input" value="2.6" min="0" max="4" step="0.1">
+    </div>
+
+    <div class="card">
+        <h3>GPA Details</h3>
+        <div class="content">
+            <div class="details">
+                <ul>
+                    <li>
+                        <div>
+                            <div class="label">GPA</div>
+                            <div class="value" id="gpa-value">2.6</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div>
+                            <div class="label">Grade %</div>
+                            <div class="value" id="grade-value">65%</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div>
+                            <div class="label">Score</div>
+                            <div class="value" id="score-value">2.6/4.0</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="chart-container">
+                <div id="chart"></div>
+                <div class="chart-text-wrapper">
+                    <span id="chart-gpa-value"></span>
+                    <span class="chart-gpa-label">GPA</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        const chartGpaValue = document.getElementById('chart-gpa-value');
+        const gpaInput = document.getElementById('gpa-input');
+        const gpaValueDisplay = document.getElementById('gpa-value');
+        const gradeValueDisplay = document.getElementById('grade-value');
+        const scoreValueDisplay = document.getElementById('score-value');
+        
+        const myChart = echarts.init(document.getElementById('chart'), null, { renderer: 'svg' });
+        
+        const maxGpa = 4.0;
+        function updateAll(gpa) {
+            if (isNaN(gpa) || gpa < 0 || gpa > maxGpa) return;
+            
+            let progressColor;
+            if (gpa >= 3.0) {
+                progressColor = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: '#54E484' },
+                    { offset: 1, color: '#28a745' }
+                ]);
+            } else if (gpa < 2.0) {
+                progressColor = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: '#FF6B6B' },
+                    { offset: 1, color: '#dc3545' }
+                ]);
+            } else {
+                progressColor = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: '#FFD166' },
+                    { offset: 1, color: '#f0ad4e' }
+                ]);
+            }
+
+            const pct = (gpa / maxGpa) * 100;
+            gpaValueDisplay.innerText = gpa.toFixed(1);
+            gradeValueDisplay.innerText = Math.round(pct) + '%';
+            scoreValueDisplay.innerText = `${gpa.toFixed(1)}/${maxGpa.toFixed(1)}`;
+            document.documentElement.style.setProperty('--bullet-color', gpa >= 3.0 ? '#28a745' : (gpa < 2.0 ? '#dc3545' : '#f0ad4e'));
+            
+            chartGpaValue.innerText = gpa.toFixed(1);
+
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    axisPointer: { type: 'none' },
+                    formatter: params => {
+                        if (params.seriesName === 'background' || params.seriesName === 'progress-track' || params.color === 'transparent') {
+                            return null;
+                        }
+                        return `<b>GPA:</b> ${gpa.toFixed(1)}<br/>
+                                <b>Grade:</b> ${Math.round(pct)}%<br/>
+                                <b>Score:</b> ${gpa.toFixed(1)}/${maxGpa.toFixed(1)}`;
+                    }
+                },
+                series: [
+                    {
+                        name: 'background',
+                        type: 'pie',
+                        radius: [94, 118], 
+                        startAngle: 90,
+                        silent: true,
+                        label: { show: false },
+                        labelLine: { show: false },
+                        itemStyle: {
+                            color: '#f1f3f5',
+                            borderWidth: 0,
+                            borderColor: 'transparent'
+                        },
+                        data: [{ value: 100 }]
+                    },
+                    {
+                        name: 'progress-track',
+                        type: 'pie',
+                        radius: [88, 124], 
+                        startAngle: 90,
+                        silent: true,
+                        animationDurationUpdate: 700,
+                        animationEasingUpdate: 'cubicInOut',
+                        label: { show: false },
+                        labelLine: { show: false },
+                        itemStyle: {
+                            borderWidth: 0,
+                            borderColor: 'transparent'
+                        },
+                        data: [
+                            { value: pct, itemStyle: { color: '#F0F2F4' } },
+                            { value: 100 - pct, itemStyle: { color: 'transparent' } }
+                        ]
+                    },
+                    {
+                        name: 'progress',
+                        type: 'pie',
+                        radius: [94, 118],
+                        startAngle: 90,
+                        animationDurationUpdate: 700,
+                        animationEasingUpdate: 'cubicInOut',
+                        label: { show: false },
+                        labelLine: { show: false },
+                        itemStyle: {
+                            borderWidth: 0,
+                            borderColor: 'transparent'
+                        },
+                        data: [
+                            { value: pct, itemStyle: { color: progressColor } },
+                            { value: 100 - pct, itemStyle: { color: 'transparent' } }
+                        ]
+                    }
+                ]
+            };
+            myChart.setOption(option, { replaceMerge: ['series'] });
+        }
+        gpaInput.addEventListener('input', e => updateAll(parseFloat(e.target.value)));
+        updateAll(parseFloat(gpaInput.value));
+    </script>
+
+</body>
+</html>
