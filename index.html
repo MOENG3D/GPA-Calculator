@@ -43,8 +43,10 @@
         }
 
         .card {
+            /* Set as a positioning context for the absolutely positioned h3 title */
             position: relative; 
             background-color: #ffffff;
+            /* Top padding is handled by the h3 element's absolute positioning and padding */
             padding: 0 24px 24px 24px;
             border: 1px solid #dee2e6;
             border-radius: 16px;
@@ -59,6 +61,7 @@
         }
         
         .card h3 {
+            /* Absolutely position the header to fix it at the top and allow a full-width border */
             position: absolute;
             top: 16.8px;
             left: 0;
@@ -77,12 +80,14 @@
             justify-content: center;
             flex-wrap: wrap;
             gap: 38px;
+            /* Push the main content down to clear the absolutely positioned header */
             margin-top: 80px;
         }
         
         .chart-container {
             width: 248px;
             height: 248px;
+            /* Set as a positioning context for the centered text */
             position: relative;
         }
         
@@ -91,6 +96,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            /* Allow mouse events to "pass through" this text wrapper to the chart underneath (for tooltips) */
             pointer-events: none;
             display: flex;
             flex-direction: column;
@@ -129,6 +135,7 @@
         
         .details li::before {
             content: '●';
+            /* This color is dynamically set by the JavaScript function */
             color: var(--bullet-color, #f0ad4e);
             font-size: 14px;
             margin-right: 12px;
@@ -168,20 +175,15 @@
             }
 
             .details {
-                text-align: left; /* تغيير المحاذاة لليسار */
+                text-align: left;
                 width: 100%;
                 display: flex;
                 justify-content: center;
             }
             
-            /* مؤكد: تم تعديل هذه القاعدة */
             .details li {
-                /* تم إلغاء justify-content: center لجعل المحتوى يبدأ من اليسار */
                 align-items: center;
             }
-
-            /* مؤكد: تم حذف القاعدة الخاصة بـ li::before لإظهار النقاط */
-
         }
     </style>
 </head>
@@ -205,7 +207,7 @@
                     </li>
                     <li>
                         <div>
-                            <div class="label">Grade%</div>
+                            <div class="label">Grade %</div>
                             <div class="value" id="grade-value">65%</div>
                         </div>
                     </li>
@@ -234,6 +236,8 @@
         const gradeValueDisplay = document.getElementById('grade-value');
         const scoreValueDisplay = document.getElementById('score-value');
         
+        // Initialize ECharts with the SVG renderer to prevent pixelation on browser zoom.
+        // SVG remains crisp at any scale, unlike the default Canvas renderer.
         const myChart = echarts.init(document.getElementById('chart'), null, { renderer: 'svg' });
         
         const maxGpa = 4.0;
@@ -262,6 +266,8 @@
             gpaValueDisplay.innerText = gpa.toFixed(1);
             gradeValueDisplay.innerText = Math.round(pct) + '%';
             scoreValueDisplay.innerText = `${gpa.toFixed(1)}/${maxGpa.toFixed(1)}`;
+            
+            // Dynamically update the CSS variable for the bullet point color
             document.documentElement.style.setProperty('--bullet-color', gpa >= 3.0 ? '#28a745' : (gpa < 2.0 ? '#dc3545' : '#f0ad4e'));
             
             chartGpaValue.innerText = gpa.toFixed(1);
@@ -270,6 +276,7 @@
                 tooltip: {
                     trigger: 'item',
                     axisPointer: { type: 'none' },
+                    // Hides the tooltip for background/track layers for a cleaner experience
                     formatter: params => {
                         if (params.seriesName === 'background' || params.seriesName === 'progress-track' || params.color === 'transparent') {
                             return null;
@@ -283,6 +290,7 @@
                     {
                         name: 'background',
                         type: 'pie',
+                        // Layer 1 (Bottom): The static, thin background track.
                         radius: [94, 118], 
                         startAngle: 90,
                         silent: true,
@@ -298,6 +306,7 @@
                     {
                         name: 'progress-track',
                         type: 'pie',
+                        // Layer 2 (Middle): The moving, thick progress track that shows underneath the main progress.
                         radius: [88, 124], 
                         startAngle: 90,
                         silent: true,
@@ -317,6 +326,7 @@
                     {
                         name: 'progress',
                         type: 'pie',
+                        // Layer 3 (Top): The final, moving gradient ring.
                         radius: [94, 118],
                         startAngle: 90,
                         animationDurationUpdate: 700,
@@ -339,7 +349,6 @@
         gpaInput.addEventListener('input', e => updateAll(parseFloat(e.target.value)));
         updateAll(parseFloat(gpaInput.value));
     </script>
-    
 
 </body>
 </html>
