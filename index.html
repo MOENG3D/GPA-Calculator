@@ -41,12 +41,9 @@
             text-align: center;
             font-size: 18px;
         }
-
         .card {
-            /* Set as a positioning context for the absolutely positioned h3 title */
             position: relative; 
             background-color: #ffffff;
-            /* Top padding is handled by the h3 element's absolute positioning and padding */
             padding: 0 24px 24px 24px;
             border: 1px solid #dee2e6;
             border-radius: 16px;
@@ -59,9 +56,7 @@
             flex-direction: column;
             justify-content: center;
         }
-        
         .card h3 {
-            /* Absolutely position the header to fix it at the top and allow a full-width border */
             position: absolute;
             top: 16.8px;
             left: 0;
@@ -73,50 +68,41 @@
             font-weight: 600;
             color: #031C42;
         }
-
         .content {
             display: flex;
             align-items: center;
             justify-content: center;
             flex-wrap: wrap;
             gap: 38px;
-            /* Push the main content down to clear the absolutely positioned header */
             margin-top: 80px;
         }
-        
         .chart-container {
             width: 248px;
             height: 248px;
-            /* Set as a positioning context for the centered text */
             position: relative;
         }
-        
         .chart-text-wrapper {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            /* Allow mouse events to "pass through" this text wrapper to the chart underneath (for tooltips) */
             pointer-events: none;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 4px;
         }
-
         #chart-gpa-value {
             font-size: 48px;
             font-weight: 600;
             color: #031C42;
             line-height: 1;
         }
-
         .chart-gpa-label {
             font-size: 16px;
             font-weight: 500;
             color: rgba(79, 98, 123, 0.7);
         }
-
         #chart {
             width: 100%;
             height: 100%;
@@ -126,29 +112,24 @@
             padding: 0;
             margin: 0;
         }
-        
         .details li {
             display: flex;
             align-items: flex-start;
             margin-bottom: 12px;
         }
-        
         .details li::before {
             content: '●';
-            /* This color is dynamically set by the JavaScript function */
             color: var(--bullet-color, #f0ad4e);
             font-size: 14px;
             margin-right: 12px;
             padding-top: 5px;
         }
-        
         .details .label {
             font-family: 'Roboto', sans-serif;
             font-weight: 500;
             color: #031C42;
             font-size: 22px;
         }
-        
         .details .value {
             font-family: 'Roboto', sans-serif;
             font-weight: 500;
@@ -156,7 +137,6 @@
             font-size: 22px;
             margin-top: 4px;
         }
-
         @media (max-width: 768px) {
             .card {
                 padding: 24px;
@@ -166,21 +146,18 @@
                 gap: 40px;
                 margin-top: 0;
             }
-
             .card h3 {
                 position: static;
                 text-align: center;
                 margin: 0 0 24px 0;
                 padding: 0 0 16px 0;
             }
-
             .details {
                 text-align: left;
                 width: 100%;
                 display: flex;
                 justify-content: center;
             }
-            
             .details li {
                 align-items: center;
             }
@@ -207,7 +184,7 @@
                     </li>
                     <li>
                         <div>
-                            <div class="label">Grade%</div>
+                            <div class="label">Grade %</div>
                             <div class="value" id="grade-value">65%</div>
                         </div>
                     </li>
@@ -236,88 +213,78 @@
         const gradeValueDisplay = document.getElementById('grade-value');
         const scoreValueDisplay = document.getElementById('score-value');
         
-        // Initialize ECharts with the SVG renderer to prevent pixelation on browser zoom.
-        // SVG remains crisp at any scale, unlike the default Canvas renderer.
         const myChart = echarts.init(document.getElementById('chart'), null, { renderer: 'svg' });
         
+        function animateValue(element, start, end, duration, decimals = 0, suffix = '') {
+            let startTime = null;
+            const step = (currentTime) => {
+                if (!startTime) startTime = currentTime;
+                const progress = Math.min((currentTime - startTime) / duration, 1);
+                const easedProgress = progress * (2 - progress);
+                const currentValue = easedProgress * (end - start) + start;
+                element.innerText = currentValue.toFixed(decimals) + suffix;
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    element.innerText = end.toFixed(decimals) + suffix;
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
         const maxGpa = 4.0;
-        function updateAll(gpa) {
+        function updateAll(gpa, isInitialLoad = false) {
             if (isNaN(gpa) || gpa < 0 || gpa > maxGpa) return;
+            
+            const animationDuration = 1000;
             
             let progressColor;
             if (gpa >= 3.0) {
-                progressColor = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                    { offset: 0, color: '#54E484' },
-                    { offset: 1, color: '#28a745' }
-                ]);
+                progressColor = new echarts.graphic.LinearGradient(0,0,0,1, [{ offset: 0, color: '#54E484' },{ offset: 1, color: '#28a745' }]);
             } else if (gpa < 2.0) {
-                progressColor = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                    { offset: 0, color: '#FF6B6B' },
-                    { offset: 1, color: '#dc3545' }
-                ]);
+                progressColor = new echarts.graphic.LinearGradient(0,0,0,1, [{ offset: 0, color: '#FF6B6B' },{ offset: 1, color: '#dc3545' }]);
             } else {
-                progressColor = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                    { offset: 0, color: '#FFD166' },
-                    { offset: 1, color: '#f0ad4e' }
-                ]);
+                progressColor = new echarts.graphic.LinearGradient(0,0,0,1, [{ offset: 0, color: '#FFD166' },{ offset: 1, color: '#f0ad4e' }]);
             }
 
             const pct = (gpa / maxGpa) * 100;
-            gpaValueDisplay.innerText = gpa.toFixed(1);
-            gradeValueDisplay.innerText = Math.round(pct) + '%';
-            scoreValueDisplay.innerText = `${gpa.toFixed(1)}/${maxGpa.toFixed(1)}`;
+            const scoreSuffix = `/${maxGpa.toFixed(1)}`;
+
+            if (isInitialLoad) {
+                animateValue(chartGpaValue, 0, gpa, animationDuration, 1);
+                animateValue(gpaValueDisplay, 0, gpa, animationDuration, 1);
+                animateValue(gradeValueDisplay, 0, Math.round(pct), animationDuration, 0, '%');
+                animateValue(scoreValueDisplay, 0, gpa, animationDuration, 1, scoreSuffix);
+            } else {
+                chartGpaValue.innerText = gpa.toFixed(1);
+                gpaValueDisplay.innerText = gpa.toFixed(1);
+                gradeValueDisplay.innerText = Math.round(pct) + '%';
+                scoreValueDisplay.innerText = gpa.toFixed(1) + scoreSuffix;
+            }
             
-            // Dynamically update the CSS variable for the bullet point color
             document.documentElement.style.setProperty('--bullet-color', gpa >= 3.0 ? '#28a745' : (gpa < 2.0 ? '#dc3545' : '#f0ad4e'));
             
-            chartGpaValue.innerText = gpa.toFixed(1);
-
             const option = {
-                tooltip: {
-                    trigger: 'item',
-                    axisPointer: { type: 'none' },
-                    // Hides the tooltip for background/track layers for a cleaner experience
-                    formatter: params => {
-                        if (params.seriesName === 'background' || params.seriesName === 'progress-track' || params.color === 'transparent') {
-                            return null;
-                        }
-                        return `<b>GPA:</b> ${gpa.toFixed(1)}<br/>
-                                <b>Grade:</b> ${Math.round(pct)}%<br/>
-                                <b>Score:</b> ${gpa.toFixed(1)}/${maxGpa.toFixed(1)}`;
-                    }
-                },
+                // Set initial animation for all series
+                animationDuration: isInitialLoad ? animationDuration : 0,
+                animationEasing: 'cubicOut',
+                
                 series: [
-                    {
-                        name: 'background',
-                        type: 'pie',
-                        // Layer 1 (Bottom): The static, thin background track.
-                        radius: [94, 118], 
-                        startAngle: 90,
-                        silent: true,
-                        label: { show: false },
-                        labelLine: { show: false },
-                        itemStyle: {
-                            color: '#f1f3f5',
-                            borderWidth: 0,
-                            borderColor: 'transparent'
-                        },
-                        data: [{ value: 100 }]
+                    { 
+                        name: 'background', type: 'pie', radius: [94, 118], startAngle: 90, silent: true, label: { show: false }, labelLine: { show: false }, itemStyle: { color: '#f1f3f5', borderWidth: 0, borderColor: 'transparent' }, data: [{ value: 100 }]
                     },
                     {
                         name: 'progress-track',
                         type: 'pie',
-                        // Layer 2 (Middle): The moving, thick progress track that shows underneath the main progress.
                         radius: [88, 124], 
                         startAngle: 90,
                         silent: true,
+                        // --- التصحيح النهائي للحركة ---
+                        // Use animationDurationUpdate for smooth transitions on data change
                         animationDurationUpdate: 700,
                         animationEasingUpdate: 'cubicInOut',
-                        label: { show: false },
-                        labelLine: { show: false },
-                        itemStyle: {
-                            borderWidth: 0,
-                            borderColor: 'transparent'
-                        },
+                        label: { show: false }, labelLine: { show: false },
+                        itemStyle: { borderWidth: 0, borderColor: 'transparent' },
                         data: [
                             { value: pct, itemStyle: { color: '#F0F2F4' } },
                             { value: 100 - pct, itemStyle: { color: 'transparent' } }
@@ -326,17 +293,14 @@
                     {
                         name: 'progress',
                         type: 'pie',
-                        // Layer 3 (Top): The final, moving gradient ring.
                         radius: [94, 118],
                         startAngle: 90,
+                        // --- التصحيح النهائي للحركة ---
+                        // Use animationDurationUpdate for smooth transitions on data change
                         animationDurationUpdate: 700,
                         animationEasingUpdate: 'cubicInOut',
-                        label: { show: false },
-                        labelLine: { show: false },
-                        itemStyle: {
-                            borderWidth: 0,
-                            borderColor: 'transparent'
-                        },
+                        label: { show: false }, labelLine: { show: false },
+                        itemStyle: { borderWidth: 0, borderColor: 'transparent' },
                         data: [
                             { value: pct, itemStyle: { color: progressColor } },
                             { value: 100 - pct, itemStyle: { color: 'transparent' } }
@@ -346,8 +310,9 @@
             };
             myChart.setOption(option, { replaceMerge: ['series'] });
         }
-        gpaInput.addEventListener('input', e => updateAll(parseFloat(e.target.value)));
-        updateAll(parseFloat(gpaInput.value));
+        
+        gpaInput.addEventListener('input', e => updateAll(parseFloat(e.target.value), false));
+        updateAll(parseFloat(gpaInput.value), true);
     </script>
 
 </body>
